@@ -4,7 +4,18 @@ Wonder no more with the primier IoT dish sink management system.
 
 ## How Does It Work??
 
+If a dish is left in the sink, it snaps a picture!
+
 ## Software
+
+Dishpolice is a Python3 application.
+
+### Provisioning
+
+Pip3 install the following in sequence:
+* matplotlib
+* numpy
+* opencv-python
 
 ## Hardware
 
