@@ -19,13 +19,35 @@ LOG_FORMAT = "%(asctime)-15s %(message)s"
 LOG_LEVEL = os.environ.get("LOG_LEVEL").upper()
 
 
+def take_frame(video):
+    '''
+    take_frame captures an image using the supplied video feed and then
+    processes it for motion detection.
+    '''
+    ret, frame = video.read()
+
+    if frame is None:
+        break
+    frame = noise_processing(frame)
+    return frame
+
+
+def noise_processing(img):
+    '''
+    noise_processing receives an image object and processes it to
+    remove image noise.
+    '''
+    frame = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    frame = cv2.GaussianBlur(img, (21, 21), 0)
+    return frame
+
+
 def main():
     '''
     The main function governs the operation of the dishcop application.
     '''
 
     # initialize environment and hardware
-    busted_counter = 0
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
     background = cv2.createBackgroundSubtractorMOG2()
 
@@ -36,21 +58,30 @@ def main():
         logging.info("failed to initialize camera")
         sys.exit(0)
 
+
+    # create initial background frame
+    background = take_frame(video)
+    
+
     try:
 
         # Perpetual video loop
         while True:
 
-            ret, frame = video.read()
-            
-            if frame is None:
-                break
+            new_frame = take_frame(video)
 
-            fg_mask = background.apply(frame)
+            # fg_mask = background.apply(frame)
+            delta = cv2.absdiff(new_frame, background)
 
-            cv.imshow("frame", frame)
-            cv.imshow("Mask", fg_mask)
+            threshold = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
 
+
+            if (threshold.sum() > 100):
+                # motion! Do the thing
+                print("yes")
+            else:
+                # no motion, do nothing.
+                print("no")            
 
     except KeyboardInterrupt:
         logging.info("Application ending.")
