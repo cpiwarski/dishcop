@@ -19,18 +19,6 @@ LOG_FORMAT = "%(asctime)-15s %(message)s"
 LOG_LEVEL = os.environ.get("LOG_LEVEL").upper()
 
 
-def take_picture(camera, counter):
-    '''
-    This function receives a camera object and takes a picture with it, saving
-    the image to a file.
-    '''
-    filename = DIR + FILE + counter
-    camera.start_preview()
-    camera.capture(filename)
-    camera.stop_preview()
-    busted_counter += 1
-
-
 def main():
     '''
     The main function governs the operation of the dishcop application.
@@ -39,28 +27,36 @@ def main():
     # initialize environment and hardware
     busted_counter = 0
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
-    camera = picamera.PiCamera()
+    background = cv2.createBackgroundSubtractorMOG2()
+
+
+    # initialize video stream
+    video = cv2.VideoCapture(0)
+    if not video.isOpened:
+        logging.info("failed to initialize camera")
+        sys.exit(0)
 
     try:
-        # wait for a dish event to occur.
-        while true:
 
-            # fire off camera
-            take_picture()
+        # Perpetual video loop
+        while True:
 
-            # wait for a requisite amount of time
+            ret, frame = video.read()
+            
+            if frame is None:
+                break
 
-            # take another picture
-            take_picture()
+            fg_mask = background.apply(frame)
 
+            cv.imshow("frame", frame)
+            cv.imshow("Mask", fg_mask)
 
-            # perform comparison
-
-            # if (dishes still in sink) save first image
 
     except KeyboardInterrupt:
         logging.info("Application ending.")
         sys.exit(0)
+
+    video.release()
 
 
 if __name__ == '__main__':
