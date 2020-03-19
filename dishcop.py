@@ -6,10 +6,7 @@ import logging
 import os
 import sys
 import time
-import gpiozero
 import cv2
-import numpy
-import picamera
 
 
 # Declarations
@@ -17,6 +14,7 @@ DIR = "/home/pi/Pictures/busted"
 FILE = "busted_"
 LOG_FORMAT = "%(asctime)-15s %(message)s"
 LOG_LEVEL = os.environ.get("LOG_LEVEL").upper()
+SLEEP_DURATION = 120
 
 
 def take_frame(video):
@@ -27,7 +25,8 @@ def take_frame(video):
     ret, frame = video.read()
 
     if frame is None:
-        break
+        logging.info("failure to take frame. Exiting...")
+        sys.exit(0)
     frame = noise_processing(frame)
     return frame
 
@@ -49,10 +48,6 @@ def main():
 
     # initialize environment and hardware
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
-    background = cv2.createBackgroundSubtractorMOG2()
-
-
-    # initialize video stream
     video = cv2.VideoCapture(0)
     if not video.isOpened:
         logging.info("failed to initialize camera")
@@ -61,7 +56,7 @@ def main():
 
     # create initial background frame
     background = take_frame(video)
-    
+
 
     try:
 
@@ -76,12 +71,17 @@ def main():
             threshold = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
 
 
-            if (threshold.sum() > 100):
+            if threshold.sum() > 100:
+
+                # snap a picture
+
+                # suspend for dish washing duration - test times
+                time.sleep(SLEEP_DURATION)
                 # motion! Do the thing
                 print("yes")
             else:
                 # no motion, do nothing.
-                print("no")            
+                print("no")
 
     except KeyboardInterrupt:
         logging.info("Application ending.")
