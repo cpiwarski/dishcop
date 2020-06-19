@@ -14,6 +14,7 @@ DIR = "/home/pi/Pictures/busted"
 FILE = "busted_"
 LOG_FORMAT = "%(asctime)-15s %(message)s"
 LOG_LEVEL = os.environ.get("LOG_LEVEL").upper()
+PAUSE_DURATION = 5
 SLEEP_DURATION = 120
 
 
@@ -53,14 +54,12 @@ def main():
         logging.info("failed to initialize camera")
         sys.exit(0)
 
-    threshold = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
-
     # let camera fully initialize
-    time.sleep(4)
+    time.sleep(PAUSE_DURATION)
 
     # create initial background frame
     background = take_frame(video)
-
+    background_grayscale = noise_processing(background)
     try:
 
         # Perpetual video loop
@@ -69,25 +68,29 @@ def main():
             new_frame = take_frame(video)
 
             # fg_mask = background.apply(frame)
-            delta = cv2.absdiff(new_frame, background)
+            delta = cv2.absdiff(new_frame, background_grayscale)
+            threshold = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
 
             if threshold.sum() > 100:
 
                 # snap a picture
+                before = take_frame(video)
 
                 # suspend for dish washing duration - test times
                 time.sleep(SLEEP_DURATION)
                 # motion! Do the thing
+
                 print("yes")
             else:
                 # no motion, do nothing.
                 print("no")
 
-            time.sleep(SLEEP_DURATION)
+            time.sleep(PAUSE_DURATION)
 
 
     except KeyboardInterrupt:
         logging.info("Application ending.")
+        video.release()
         sys.exit(0)
 
     video.release()
