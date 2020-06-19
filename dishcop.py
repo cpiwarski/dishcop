@@ -53,10 +53,13 @@ def main():
         logging.info("failed to initialize camera")
         sys.exit(0)
 
+    threshold = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
+
+    # let camera fully initialize
+    time.sleep(4)
 
     # create initial background frame
     background = take_frame(video)
-
 
     try:
 
@@ -67,9 +70,6 @@ def main():
 
             # fg_mask = background.apply(frame)
             delta = cv2.absdiff(new_frame, background)
-
-            threshold = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
-
 
             if threshold.sum() > 100:
 
@@ -82,6 +82,9 @@ def main():
             else:
                 # no motion, do nothing.
                 print("no")
+
+            time.sleep(SLEEP_DURATION)
+
 
     except KeyboardInterrupt:
         logging.info("Application ending.")

@@ -1,10 +1,11 @@
 # Who Keeps Leaving Dishes In The Sink??
 
-Wonder no more with the primier IoT dish sink management system.
+Wonder no more with the primier IoT dish sink management system. Dishcop is
+meant to be installed and maintained as an appliance.
 
 ## How Does It Work??
 
-If a dish is left in the sink, it snaps a picture!
+If a dish is left in the sink, it snaps a picture of the culprit!
 
 ## Software
 
